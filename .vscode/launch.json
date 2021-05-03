@@ -1,0 +1,18 @@
+{
+    "configurations": [
+        {
+            "type": "aws-sam",
+            "request": "direct-invoke",
+            "name": "deployment:FortuneTellerApp",
+            "invokeTarget": {
+                "target": "template",
+                "templatePath": "${workspaceFolder}/exercise-one/deployment/template.yaml",
+                "logicalId": "FortuneTellerApp"
+            },
+            "lambda": {
+                "payload": {},
+                "environmentVariables": {}
+            }
+        }
+    ]
+}
