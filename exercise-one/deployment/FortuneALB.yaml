@@ -1,0 +1,88 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: ""
+
+Resources:
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupDescription: "security group for fortune-exercise"
+      GroupName: "fortune-exercise-sg"
+      SecurityGroupIngress: 
+        - CidrIp: "0.0.0.0/0"
+          FromPort: 80
+          IpProtocol: "tcp"
+          ToPort: 80
+      Tags: 
+        - Key: "project"
+          Value: "fortune-exercise"
+        - Key: "created_by"
+          Value: "adinh"
+      VpcId: !ImportValue FortuneExerciseVPC
+  
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties: 
+      Name: "fortune-exercise-alb"
+      IpAddressType: "ipv4"
+      Type: "application"
+      Scheme: "internet-facing"
+      SecurityGroups: 
+        - !Ref ALBSecurityGroup
+      Subnets: 
+        - !Ref VPCPublicSubnetA
+        - !Ref VPCPublicSubnetB
+      Tags: 
+        - Key: "project"
+          Value: "fortune-exercise"
+        - Key: "created_by"
+          Value: "adinh"
+
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 80
+      Protocol: "HTTP"
+      DefaultActions:
+      - Type: "redirect"
+        RedirectConfig:
+          StatusCode: "HTTP_301"
+          Protocol: "HTTP"
+          Port: "80"
+          Host: "#{host}"
+          Path: "/#{path}"
+          Query: "#{query}"
+
+  ALBTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: "fortune-exercise-alb-target-group"
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: "/"
+      HealthCheckPort: "traffic-port"
+      HealthCheckProtocol: "HTTP"
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 5
+      Port: 80
+      Protocol: "HTTP"
+      TargetType: lambda
+      Targets: 
+        - Id: !GetAtt FortuneExerciseLambda.Arn
+      Tags: 
+        - Key: "project"
+          Value: "fortune-exercise"
+        - Key: "created_by"
+          Value: "adinh"
+      UnhealthyThresholdCount: 2
+      VpcId: !Ref FortuneExerciseVPC
+
+Outputs:
+  SecurityGroup:
+
+  LoadBalancer:
+
+  Listener:
+
+  TargetGroup:

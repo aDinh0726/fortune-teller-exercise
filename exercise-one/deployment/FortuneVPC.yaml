@@ -1,0 +1,128 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "Template for AWS CLI conversion of files to upload as lambda zip package to S3"
+  
+Resources:
+  FortuneExerciseVpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: "10.0.0.0/16"
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: "default"
+      Tags:
+        - Key: "project"
+          Value: "fortune-exercise"
+        - Key: "created_by"
+          Value: "adinh"
+
+  VpcRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref FortuneExerciseVpc
+      Tags:
+        - Key: "project"
+          Value: "fortune-exercise"
+        - Key: "created_by"
+          Value: "adinh"
+  
+  InternetGateway:
+    DependsOn: FortuneExerciseVpc
+    Type: AWS::EC2::InternetGateway
+    Properties: 
+      Tags: 
+        - Key: "project"
+          Value: "fortune-exercise"
+        - Key: "created_by"
+          Value: "adinh"
+
+  VpcGatewayAssociation:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref FortuneExerciseVpc
+
+  VpcRoutes:
+    DependsOn: VpcGatewayAssociation
+    Type: AWS::EC2::Route
+    Properties: 
+      RouteTableId: !Ref VpcRouteTable
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId: !Ref InternetGateway
+
+  VpcPublicSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: "us-east-1a"
+      CidrBlock: "10.0.0.0/24"
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: "project"
+          Value: "fortune-exercise"
+        - Key: "created_by"
+          Value: "adinh"
+      VpcId: !Ref FortuneExerciseVpc
+
+  VpcPublicSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties: 
+      AvailabilityZone: "us-east-1b"
+      CidrBlock: "10.0.1.0/24"
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: "project"
+          Value: "fortune-exercise"
+        - Key: "created_by"
+          Value: "adinh"
+      VpcId: !Ref FortuneExerciseVpc
+
+  VpcPrivateSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: "us-east-1c"
+      CidrBlock: "10.0.2.0/24"
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: "project"
+          Value: "fortune-exercise"
+        - Key: "created_by"
+          Value: "adinh"
+      VpcId: !Ref FortuneExerciseVpc
+
+Outputs:
+  Vpc:
+    Description: Information about the value
+    Value: !Ref FortuneExerciseVpc
+    Export:
+      Name: !Sub "${AWS::StackName}-vpcId"
+
+  RouteTable:
+    Description: Information about the value
+    Value: !Ref VpcRouteTable
+
+  Routing:
+    Description: Information about the value
+    Value: !Ref VpcRoutes
+  
+  VpcIG:
+    Description: Information about the value
+    Value: !Ref InternetGateway
+  
+  PublicSubnetA:
+    Description: Information about the value
+    Value: !Ref VpcPublicSubnetA
+    Export:
+      Name: !Sub "${AWS::StackName}-pubSubnetA"
+
+  PublicSubnetB:
+    Description: Information about the value
+    Value: !Ref VpcPublicSubnetB
+    Export:
+      Name: !Sub "${AWS::StackName}-pubSubnetB"
+
+  PrivateSubnetA:
+    Description: Information about the value
+    Value: !Ref VpcPrivateSubnetA
+    Export:
+      Name: !Sub "${AWS::StackName}-privSubnetA"
+    

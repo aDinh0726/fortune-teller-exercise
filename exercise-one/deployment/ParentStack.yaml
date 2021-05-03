@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: ""
+Metadata:
+  
+Parameters:
+  FortuneExerciseZipBucketPath:
+    Type: String
+    Description: "The name for the S3 bucket to retrieve lambda zip package"
+    Default: "/s3/bucket/path/"
+    AllowedPattern: "^[0-9A-Za-z\.\-_]*(?<!\.)$"
+
+  FortuneExerciseZipFile:
+    Type: String
+    Description: "The name of the zip file uploaded to S3 used as deployment package in Lambda"
+    Default: "replace-me.zip"
+
+Resources:
+  
+
+Outputs:
+  

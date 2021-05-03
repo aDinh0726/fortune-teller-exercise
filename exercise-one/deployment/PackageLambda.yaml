@@ -1,0 +1,12 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Template for AWS CLI conversion of files to upload as lambda zip package to S3"
+
+Transform: "AWS::Serverless-2016-10-31"
+
+Resources:
+  FortuneTellerApp:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: fortune_handler.app.lambda_handler
+      Runtime: python3.8
+      CodeUri: ../../exercise_1/

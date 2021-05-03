@@ -1,0 +1,12 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: ""
+Metadata:
+  
+Parameters:
+  
+Resources:
+  FortuneExerciseEc2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      AvailabilityZone: !Ref FortuneExerciseAZ
+Outputs:

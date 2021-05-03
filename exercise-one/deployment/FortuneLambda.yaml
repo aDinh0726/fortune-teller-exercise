@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: ""
+
+Parameters:
+  FortuneExerciseBucketName:
+    Type: String
+    Description: "The name for the S3 bucket to retrieve lambda zip package"
+    Default: "s3bucketname"
+
+  FortuneExerciseBucketKey:
+    Type: String
+    Description: "The S3 key of the zip-file to upload into Lambda"
+    Default: "replace/me.zip"
+
+Resources:
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: "sts:AssumeRole"
+  
+  LambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: "fortune-exercise-lambda"
+      Handler: "fortune_handler.app.lambda_handler"
+      Runtime: "python3.8"
+      Code:
+        S3Bucket: !Ref FortuneExerciseBucketName
+        S3Key: !Ref FortuneExerciseBucketKey
+      Timeout: 30
+      Role: !GetAtt LambdaExecutionRole.Arn
+  
+  LambdaInvokePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: "lambda:InvokeFunction"
+      Principal: elasticloadbalancing.amazonaws.com
+      FunctionName: !GetAtt LambdaFunction.Arn
+
+Outputs:
+  FortuneExerciseLambdaRole:
+    Description: Information about the value
+    Value: !Ref LambdaExecutionRole
+
+  FortuneExerciseLambda:
+    Description: Information about the value
+    Value: !GetAtt LambdaFunction.Arn
+
+  InvokePermission:
+    Description: Information about the value
+    Value: !Ref LambdaInvokePermissions
