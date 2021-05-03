@@ -2,12 +2,32 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: ""
 
 Parameters:
-  FortuneExerciseBucketName:
+  LambdaFunctionName:
     Type: String
-    Description: "The name for the S3 bucket to retrieve lambda zip package"
-    Default: "s3bucketname"
+    Description: "The S3 key of the zip-file to upload into Lambda"
+    Default: "test-fortune-exercise-lambda"
 
-  FortuneExerciseBucketKey:
+  LambdaBucketName:
+    Type: String
+    Description: "The name for the S3 bucket to retrieve Lambda zip package"
+    Default: "s3bucketname-lambda"
+
+  LambdaBucketKey:
+    Type: String
+    Description: "The S3 key of the zip-file to upload into Lambda"
+    Default: "replace/me.zip"
+  
+  LambdaLayersVersionName:
+    Type: String
+    Description: "The S3 key of the zip-file to upload into Lambda"
+    Default: "fortune-exercise-layers"
+  
+  LambdaLayersBucketName:
+    Type: String
+    Description: "The name for the S3 bucket to retrieve Lambda Layers zip package"
+    Default: "s3bucketname-layers"
+
+  LambdaLayersBucketKey:
     Type: String
     Description: "The S3 key of the zip-file to upload into Lambda"
     Default: "replace/me.zip"
@@ -27,14 +47,29 @@ Resources:
   LambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: "fortune-exercise-lambda"
+      FunctionName: !Ref LambdaFunctionName
       Handler: "fortune_handler.app.lambda_handler"
       Runtime: "python3.8"
       Code:
-        S3Bucket: !Ref FortuneExerciseBucketName
-        S3Key: !Ref FortuneExerciseBucketKey
+        S3Bucket: !Ref LambdaBucketName
+        S3Key: !Ref LambdaBucketKey
       Timeout: 30
       Role: !GetAtt LambdaExecutionRole.Arn
+      Layers: 
+        - !Ref LambdaLayersVersion
+  
+  LambdaLayersVersion:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      LayerName: !Ref LambdaLayersVersionName
+      Description: ""
+      CompatibleRuntimes:
+        - python3.8
+        - python3.7
+        - python3.6
+      Content:
+        S3Bucket: !Ref LambdaLayersBucketName
+        S3Key: !Ref LambdaLayersBucketKey
   
   LambdaInvokePermissions:
     Type: AWS::Lambda::Permission
@@ -44,14 +79,18 @@ Resources:
       FunctionName: !GetAtt LambdaFunction.Arn
 
 Outputs:
-  FortuneExerciseLambdaRole:
+  LambdaRoleId:
     Description: Information about the value
     Value: !Ref LambdaExecutionRole
 
-  FortuneExerciseLambda:
+  LambdaFunctionARN:
     Description: Information about the value
     Value: !GetAtt LambdaFunction.Arn
 
-  InvokePermission:
+  LambdaPermissionsId:
     Description: Information about the value
     Value: !Ref LambdaInvokePermissions
+
+  LambdaLayersVersionARN:
+    Description: Information about the value
+    Value: !Ref LambdaLayersVersion

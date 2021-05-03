@@ -9,4 +9,4 @@ Resources:
     Properties:
       Handler: fortune_handler.app.lambda_handler
       Runtime: python3.8
-      CodeUri: ../../exercise_1/
+      CodeUri: "../"

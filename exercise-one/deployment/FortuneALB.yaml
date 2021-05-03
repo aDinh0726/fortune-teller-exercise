@@ -2,36 +2,74 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Description: ""
 
+Parameters:
+  SecurityGroupName:
+    Type: String
+    Description: ""
+    Default: "fortune-exercise-sg"
+
+  FortuneExerciseVPC:
+    Type: String
+    Description: ""
+    Default: "vpc-id"
+
+  FortuneExerciseLambdaArn:
+    Type: String
+    Description: ""
+    Default: "lambda-function-arn"
+
+  ALBName:
+    Type: String
+    Description: ""
+    Default: "fortune-exercise-alb"
+    
+  VpcPublicSubnetA:
+    Type: String
+    Description: ""
+    Default: "publicSubnetA-id"
+
+  VpcPublicSubnetB:
+    Type: String
+    Description: ""
+    Default: "publicSubnetB-id"
+
 Resources:
-  ALBSecurityGroup:
+  SecurityGroupALB:
     Type: AWS::EC2::SecurityGroup
     Properties: 
       GroupDescription: "security group for fortune-exercise"
-      GroupName: "fortune-exercise-sg"
+      GroupName: !Ref SecurityGroupName
       SecurityGroupIngress: 
-        - CidrIp: "0.0.0.0/0"
+        - Description: ""
           FromPort: 80
           IpProtocol: "tcp"
           ToPort: 80
+          CidrIp: "0.0.0.0/0"
+      SecurityGroupEgress: 
+        - Description: ""
+          FromPort: 80
+          IpProtocol: "tcp"
+          ToPort: 80
+          CidrIp: "0.0.0.0/0"
       Tags: 
         - Key: "project"
           Value: "fortune-exercise"
         - Key: "created_by"
           Value: "adinh"
-      VpcId: !ImportValue FortuneExerciseVPC
-  
+      VpcId: !Ref FortuneExerciseVPC
+
   ApplicationLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties: 
-      Name: "fortune-exercise-alb"
+      Name: !Ref ALBName
       IpAddressType: "ipv4"
       Type: "application"
       Scheme: "internet-facing"
-      SecurityGroups: 
-        - !Ref ALBSecurityGroup
+      SecurityGroups:
+        - !Ref SecurityGroupALB
       Subnets: 
-        - !Ref VPCPublicSubnetA
-        - !Ref VPCPublicSubnetB
+        - !Ref VpcPublicSubnetA
+        - !Ref VpcPublicSubnetB
       Tags: 
         - Key: "project"
           Value: "fortune-exercise"
@@ -41,48 +79,41 @@ Resources:
   ALBListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
+      DefaultActions:
+        - Type: "forward"
+          TargetGroupArn: !Ref ALBTargetGroup
       LoadBalancerArn: !Ref ApplicationLoadBalancer
       Port: 80
       Protocol: "HTTP"
-      DefaultActions:
-      - Type: "redirect"
-        RedirectConfig:
-          StatusCode: "HTTP_301"
-          Protocol: "HTTP"
-          Port: "80"
-          Host: "#{host}"
-          Path: "/#{path}"
-          Query: "#{query}"
 
   ALBTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      Name: "fortune-exercise-alb-target-group"
-      HealthCheckEnabled: true
-      HealthCheckIntervalSeconds: 30
-      HealthCheckPath: "/"
-      HealthCheckPort: "traffic-port"
-      HealthCheckProtocol: "HTTP"
-      HealthCheckTimeoutSeconds: 5
-      HealthyThresholdCount: 5
-      Port: 80
-      Protocol: "HTTP"
+      Name: "fortune-exercise-target-group"
+      HealthCheckEnabled: false
       TargetType: lambda
       Targets: 
-        - Id: !GetAtt FortuneExerciseLambda.Arn
+        - Id: !Ref FortuneExerciseLambdaArn
       Tags: 
         - Key: "project"
           Value: "fortune-exercise"
         - Key: "created_by"
           Value: "adinh"
       UnhealthyThresholdCount: 2
-      VpcId: !Ref FortuneExerciseVPC
 
 Outputs:
-  SecurityGroup:
+  SecurityGroupId:
+    Description: Information about the value
+    Value: !Ref SecurityGroupALB
 
-  LoadBalancer:
+  LoadBalancerId:
+    Description: Information about the value
+    Value: !Ref ApplicationLoadBalancer
 
-  Listener:
+  ALBListenerId:
+    Description: Information about the value
+    Value: !Ref ALBListener
 
-  TargetGroup:
+  TargetGroupId:
+    Description: Information about the value
+    Value: !Ref ALBTargetGroup

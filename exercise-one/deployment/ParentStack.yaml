@@ -1,21 +1,106 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: ""
-Metadata:
-  
+
 Parameters:
-  FortuneExerciseZipBucketPath:
+  FortuneLambdaBucketName:
     Type: String
-    Description: "The name for the S3 bucket to retrieve lambda zip package"
-    Default: "/s3/bucket/path/"
-    AllowedPattern: "^[0-9A-Za-z\.\-_]*(?<!\.)$"
+    Description: ""
+    Default: "replace-me"
 
-  FortuneExerciseZipFile:
+  FortuneLambdaBucketKey:
     Type: String
-    Description: "The name of the zip file uploaded to S3 used as deployment package in Lambda"
-    Default: "replace-me.zip"
+    Description: ""
+    Default: "replace/me.zip"
 
+  FortuneLambdaLayersBucketName:
+    Type: String
+    Description: ""
+    Default: "replace-me"
+
+  FortuneLambdaLayersBucketKey:
+    Type: String
+    Description: ""
+    Default: "replace/me.zip"
+  
+  VpcStackS3Url:
+    Type: String
+    Description: ""
+    Default: "https://replace.me"
+
+  LambdaS3Url:
+    Type: String
+    Description: ""
+    Default: "https://replace.me"
+
+  ALBS3Url:
+    Type: String
+    Description: ""
+    Default: "https://replace.me"
+      
 Resources:
-  
+  FortuneVpcStack:
+    Type: AWS::CloudFormation::Stack
+    Properties: 
+      TemplateURL: !Ref VpcStackS3Url
+      Tags: 
+        - Key: "project"
+          Value: "fortune-exercise"
+        - Key: "created_by"
+          Value: "adinh"
 
-Outputs:
+  FortuneLambdaStack:
+    DependsOn: FortuneVpcStack
+    Type: AWS::CloudFormation::Stack
+    Properties: 
+      TemplateURL: !Ref LambdaS3Url
+      Parameters: 
+        LambdaBucketName: !Ref FortuneLambdaBucketName
+        LambdaBucketKey: !Ref FortuneLambdaBucketKey
+        LambdaLayersBucketName: !Ref FortuneLambdaLayersBucketName
+        LambdaLayersBucketKey: !Ref FortuneLambdaLayersBucketKey
+      Tags: 
+        - Key: "project"
+          Value: "fortune-exercise"
+        - Key: "created_by"
+          Value: "adinh"
+
+  FortuneALBStack:
+    DependsOn: FortuneLambdaStack
+    Type: AWS::CloudFormation::Stack
+    Properties: 
+      TemplateURL: !Ref ALBS3Url
+      Parameters: 
+        FortuneExerciseVPC: 
+          Fn::GetAtt:
+            - FortuneVpcStack
+            - Outputs.VpcId
+        FortuneExerciseLambdaArn:
+          Fn::GetAtt:
+            - FortuneLambdaStack
+            - Outputs.LambdaFunctionARN
+        VpcPublicSubnetA: 
+          Fn::GetAtt:
+            - FortuneVpcStack
+            - Outputs.PublicSubnetAId
+        VpcPublicSubnetB: 
+          Fn::GetAtt:
+            - FortuneVpcStack
+            - Outputs.PublicSubnetBId
+      Tags: 
+        - Key: "project"
+          Value: "fortune-exercise"
+        - Key: "created_by"
+          Value: "adinh"
   
+Outputs:
+  FortuneVpcStackValues:
+    Description: Information about the value
+    Value: !Ref FortuneVpcStack
+
+  FortuneLambdaStackValues:
+    Description: Information about the value
+    Value: !Ref FortuneLambdaStack
+
+  FortuneALBStackValues:
+    Description: Information about the value
+    Value: !Ref FortuneALBStack

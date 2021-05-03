@@ -2,11 +2,47 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Description: "Template for AWS CLI conversion of files to upload as lambda zip package to S3"
   
+Parameters:
+  VpcCidrBlock:
+    Type: String
+    Description: ""
+    Default: "10.0.0.0/16"
+
+  AZPublicSubnetA:
+    Type: String
+    Description: ""
+    Default: "us-east-1a"
+  
+  PublicSubnetACidr:
+    Type: String
+    Description: ""
+    Default: "10.0.0.0/24"
+  
+  AZPublicSubnetB:
+    Type: String
+    Description: ""
+    Default: "us-east-1b"
+  
+  PublicSubnetBCidr:
+    Type: String
+    Description: ""
+    Default: "10.0.1.0/24"
+
+  AZPrivateSubnetA:
+    Type: String
+    Description: ""
+    Default: "us-east-1b"
+
+  PrivateSubnetACidr:
+    Type: String
+    Description: ""
+    Default: "10.0.2.0/24"
+
 Resources:
   FortuneExerciseVpc:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock: "10.0.0.0/16"
+      CidrBlock: !Ref VpcCidrBlock
       EnableDnsHostnames: true
       EnableDnsSupport: true
       InstanceTenancy: "default"
@@ -53,8 +89,8 @@ Resources:
   VpcPublicSubnetA:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: "us-east-1a"
-      CidrBlock: "10.0.0.0/24"
+      AvailabilityZone: !Ref AZPublicSubnetA
+      CidrBlock: !Ref PublicSubnetACidr
       MapPublicIpOnLaunch: true
       Tags:
         - Key: "project"
@@ -66,8 +102,8 @@ Resources:
   VpcPublicSubnetB:
     Type: AWS::EC2::Subnet
     Properties: 
-      AvailabilityZone: "us-east-1b"
-      CidrBlock: "10.0.1.0/24"
+      AvailabilityZone: !Ref AZPublicSubnetB
+      CidrBlock: !Ref PublicSubnetBCidr
       MapPublicIpOnLaunch: true
       Tags:
         - Key: "project"
@@ -79,8 +115,8 @@ Resources:
   VpcPrivateSubnetA:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: "us-east-1c"
-      CidrBlock: "10.0.2.0/24"
+      AvailabilityZone: !Ref AZPrivateSubnetA
+      CidrBlock: !Ref PrivateSubnetACidr
       MapPublicIpOnLaunch: false
       Tags:
         - Key: "project"
@@ -90,39 +126,31 @@ Resources:
       VpcId: !Ref FortuneExerciseVpc
 
 Outputs:
-  Vpc:
+  VpcId:
     Description: Information about the value
     Value: !Ref FortuneExerciseVpc
-    Export:
-      Name: !Sub "${AWS::StackName}-vpcId"
 
-  RouteTable:
+  RouteTableId:
     Description: Information about the value
     Value: !Ref VpcRouteTable
 
-  Routing:
+  RoutingId:
     Description: Information about the value
     Value: !Ref VpcRoutes
   
-  VpcIG:
+  InternetGatewayId:
     Description: Information about the value
     Value: !Ref InternetGateway
   
-  PublicSubnetA:
+  PublicSubnetAId:
     Description: Information about the value
     Value: !Ref VpcPublicSubnetA
-    Export:
-      Name: !Sub "${AWS::StackName}-pubSubnetA"
 
-  PublicSubnetB:
+  PublicSubnetBId:
     Description: Information about the value
     Value: !Ref VpcPublicSubnetB
-    Export:
-      Name: !Sub "${AWS::StackName}-pubSubnetB"
 
-  PrivateSubnetA:
+  PrivateSubnetAId:
     Description: Information about the value
     Value: !Ref VpcPrivateSubnetA
-    Export:
-      Name: !Sub "${AWS::StackName}-privSubnetA"
     
